@@ -35,7 +35,7 @@ eval(sol.By)
 %Se obtienen 2 soluciones para x y 2 para y, simplemente comprobamos los
 %valores en otras aplicaciones como geogebra para encontrar cual es el
 %valor mas optimo. En este caso : B= (0.640425728166680, 0.110186293793982);
-pB = [ 0.640425728166680,  0.110186293793982]
+pB = [ 0.640425728166680,  0.110186293793982];
 % Repetimos para el resto de puntos, teniendo en cuenta la restricción del
 % angulo.
 %C 
@@ -53,7 +53,7 @@ eval(solC.Cx);
 eval(solC.Cy);
 
 % Selección de la rama correcta según geometría
-pC = [double(solC.Cx(2)), double(solC.Cy(2))]  % ejemplo
+pC = [double(solC.Cx(2)), double(solC.Cy(2))];  % ejemplo
 %D
 % Calculamos D
 syms Dx Dy
@@ -69,28 +69,48 @@ solD = solve([eqD1, eqD2], [Dx, Dy], 'Real', true); %Condición para que tenga s
 eval(solD.Dx);
 eval(solD.Dy);
 
-pD = [double(solD.Dx(2)), double(solD.Dy(2))]  % ejemplo
+pD = [double(solD.Dx(1)), double(solD.Dy(1))];  % ejemplo
 
-% Para el punto E tenemos tambien la condición angular por lo tanto. 
-syms Ex Ey
+% Para E tenemos que tener en cuenta la posicion y el angulo, entonces los
+% calculos son distintos, comenzamos alpicando la ley de cosenos.
+DC = 0.6;
+DE = 0.8879;
+EC = sqrt(DE^2 + DC^2 - 2 * DE * DC * cos(6.63*pi/180))
+%Con la constante de la ley de cosenos, podemos calcular lo demás : 
+k= EC/sin(6.63*pi/180)
 
-Dx = pD(1); Dy = pD(2);
-Cx = pC(1); Cy = pC(2);
+%Calculamos los posibles angulos de C
+sinC = DE/k; asin(sinC)*180/pi
 
-% Ecuación de circunferencia
-eqE1 = (Ex - Dx)^2 + (Ey - Dy)^2 == 0.8879^2;
 
-% Vectores
-vDC = [Cx - Dx, Cy - Dy];
-vDE = [Ex - Dx, Ey - Dy];
+pA
+pB
+pC
+pD
+%% Graficar mecanismo
+figure; hold on; axis equal; grid on;
 
-% Condición de ángulo
-eqE2 = (vDC(1)*vDE(1) + vDC(2)*vDE(2)) / ...
-       (sqrt(vDC(1)^2+vDC(2)^2) * sqrt(vDE(1)^2+vDE(2)^2)) == cosd(6.63);
+% Dibujar puntos
+plot(pA(1), pA(2), 'ro', 'MarkerSize', 8, 'DisplayName','A');
+plot(pB(1), pB(2), 'go', 'MarkerSize', 8, 'DisplayName','B');
+plot(pC(1), pC(2), 'bo', 'MarkerSize', 8, 'DisplayName','C');
+plot(pD(1), pD(2), 'mo', 'MarkerSize', 8, 'DisplayName','D');
+plot(pE(1), pE(2), 'ko', 'MarkerSize', 8, 'DisplayName','E');
 
-% Resolver
-solE = solve([eqE1, eqE2], [Ex, Ey], 'Real', true);
+% Dibujar pivotes fijos
+plot(O2(1), O2(2), 'ks', 'MarkerSize', 8, 'MarkerFaceColor','y','DisplayName','O2');
+plot(O4x, O4y, 'ks', 'MarkerSize', 8, 'MarkerFaceColor','y','DisplayName','O4');
+plot(O6x, O6y, 'ks', 'MarkerSize', 8, 'MarkerFaceColor','y','DisplayName','O6');
 
-eval(solE.Ex)
-eval(solE.Ey)
-pE = [double(solE.Ex(2)), double(solE.Ey(1))]
+% Dibujar barras
+plot([O2(1) pA(1)], [O2(2) pA(2)], 'r-', 'LineWidth',2);
+plot([pA(1) pB(1)], [pA(2) pB(2)], 'g-', 'LineWidth',2);
+plot([pB(1) pC(1)], [pB(2) pC(2)], 'b-', 'LineWidth',2);
+plot([O4x pB(1)], [O4y pB(2)], 'm-', 'LineWidth',2);
+plot([O4x pC(1)], [O4y pC(2)], 'm-', 'LineWidth',2);
+plot([pC(1) pD(1)], [pC(2) pD(2)], 'c-', 'LineWidth',2);
+plot([O6x pD(1)], [O6y pD(2)], 'k-', 'LineWidth',2);
+plot([pD(1) pE(1)], [pD(2) pE(2)], 'y-', 'LineWidth',2);
+
+title('Mecanismo de seis barras - Configuración θ2=250°');
+legend show;

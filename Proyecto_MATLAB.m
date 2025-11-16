@@ -69,31 +69,30 @@ solD = solve([eqD1, eqD2], [Dx, Dy], 'Real', true); %Condición para que tenga s
 eval(solD.Dx);
 eval(solD.Dy);
 
-pD = [double(solD.Dx(2)), double(solD.Dy(2))];  % ejemplo
+pD = [double(solD.Dx(1)), double(solD.Dy(1))];  % ejemplo
 
-% Para el punto E tenemos tambien la condición angular por lo tanto. 
-syms Ex Ey
+% Para E tenemos que tener en cuenta la posicion y el angulo, entonces los
+% calculos son distintos, comenzamos alpicando la ley de cosenos.
+DC = 0.6;
+DE = 0.8879;
+EC = sqrt(DE^2 + DC^2 - 2 * DE * DC * cos(6.63*pi/180))
+%Con la constante de la ley de cosenos, podemos calcular lo demás : 
+k= EC/sin(6.63*pi/180)
 
-Dx = pD(1); Dy = pD(2);
-Cx = pC(1); Cy = pC(2);
+%Calculamos los posibles angulos de C
+sinC = DE/k; asin(sinC)*180/pi %+
+sinD =DC/k; asin(sinD)*180/pi %+
+% Y sacamos las coordenadas del punto D
+% Direccion absoluta de DC desde D
+vDC = pC - pD;
+thetaDC = atan2(vDC(2), vDC(1));
 
-% Ecuación de circunferencia
-eqE1 = (Ex - Dx)^2 + (Ey - Dy)^2 == 0.8879^2;
+alpha = 6.63 * pi/180;
+thetaE = thetaDC + alpha;
 
-% Vectores
-vDC = [Cx - Dx, Cy - Dy];
-vDE = [Ex - Dx, Ey - Dy];
+% Coordenadas de E+
+pE = pD + DE * [cos(thetaE), sin(thetaE)];
 
-% Condición de ángulo
-eqE2 = (vDC(1)*vDE(1) + vDC(2)*vDE(2)) / ...
-       (sqrt(vDC(1)^2+vDC(2)^2) * sqrt(vDE(1)^2+vDE(2)^2)) == cosd(6.63);
-
-% Resolver
-solE = solve([eqE1, eqE2], [Ex, Ey], 'Real', true);
-
-eval(solE.Ex)
-eval(solE.Ey)
-pE = [double(solE.Ex(2)), double(solE.Ey(2))];
 pA
 pB
 pC
@@ -123,6 +122,7 @@ plot([O4x pC(1)], [O4y pC(2)], 'm-', 'LineWidth',2);
 plot([pC(1) pD(1)], [pC(2) pD(2)], 'c-', 'LineWidth',2);
 plot([O6x pD(1)], [O6y pD(2)], 'k-', 'LineWidth',2);
 plot([pD(1) pE(1)], [pD(2) pE(2)], 'y-', 'LineWidth',2);
+plot([pC(1) pE(1)], [pC(2) pE(2)], 'Color',[0.5 0 0.5],'LineWidth',2,'DisplayName','C-E'); % nueva barra
 
 title('Mecanismo de seis barras - Configuración θ2=250°');
 legend show;
