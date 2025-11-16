@@ -93,12 +93,36 @@ solE = solve([eqE1, eqE2], [Ex, Ey], 'Real', true);
 
 eval(solE.Ex)
 eval(solE.Ey)
-pE = [double(solE.Ex(1)), double(solE.Ey(1))];
+pE = [double(solE.Ex(2)), double(solE.Ey(2))];
 pA
 pB
 pC
 pD
 pE
+%% Graficar mecanismo
+figure; hold on; axis equal; grid on;
 
+% Dibujar puntos
+plot(pA(1), pA(2), 'ro', 'MarkerSize', 8, 'DisplayName','A');
+plot(pB(1), pB(2), 'go', 'MarkerSize', 8, 'DisplayName','B');
+plot(pC(1), pC(2), 'bo', 'MarkerSize', 8, 'DisplayName','C');
+plot(pD(1), pD(2), 'mo', 'MarkerSize', 8, 'DisplayName','D');
+plot(pE(1), pE(2), 'ko', 'MarkerSize', 8, 'DisplayName','E');
 
-% texto de pruebaaaa
+% Dibujar pivotes fijos
+plot(O2(1), O2(2), 'ks', 'MarkerSize', 8, 'MarkerFaceColor','y','DisplayName','O2');
+plot(O4x, O4y, 'ks', 'MarkerSize', 8, 'MarkerFaceColor','y','DisplayName','O4');
+plot(O6x, O6y, 'ks', 'MarkerSize', 8, 'MarkerFaceColor','y','DisplayName','O6');
+
+% Dibujar barras
+plot([O2(1) pA(1)], [O2(2) pA(2)], 'r-', 'LineWidth',2);
+plot([pA(1) pB(1)], [pA(2) pB(2)], 'g-', 'LineWidth',2);
+plot([pB(1) pC(1)], [pB(2) pC(2)], 'b-', 'LineWidth',2);
+plot([O4x pB(1)], [O4y pB(2)], 'm-', 'LineWidth',2);
+plot([O4x pC(1)], [O4y pC(2)], 'm-', 'LineWidth',2);
+plot([pC(1) pD(1)], [pC(2) pD(2)], 'c-', 'LineWidth',2);
+plot([O6x pD(1)], [O6y pD(2)], 'k-', 'LineWidth',2);
+plot([pD(1) pE(1)], [pD(2) pE(2)], 'y-', 'LineWidth',2);
+
+title('Mecanismo de seis barras - Configuración θ2=250°');
+legend show;
