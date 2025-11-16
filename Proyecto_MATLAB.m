@@ -1,0 +1,101 @@
+format long;
+
+%% RESOLUCIÓN CALCULOS PROYECTO MECANISMOS
+% Datos: 
+enunciado = imread("enunciado_proyecto.png");
+imshow(enunciado)
+
+
+%Calculamos las posiciones de los puntos, sabiendo que O2 = (0.4684, 0.0233) y que
+%02=250º.
+%Calulamos SEN(02) y COS(02) sabiendo que mide 0.06m
+O2 = [0.4684, 0.0233]
+ax =O2(1,1) + 0.06*cos(250*pi/180);
+ay =O2(1,2) + 0.06*sin(250*pi/180);
+pA = [ax,ay];
+
+%Ahora podemos calcular los demás puntos creando circunferencias y buscando
+%por la diferencia de distancias donde van a coincidir
+
+%Calculamos B
+syms Bx By
+
+% Coordenadas conocidas
+O4x = 0.73;  O4y = 0.023;
+% Ecuaciones de circunferencias
+eq1 = (Bx - O4x)^2 + (By - O4y)^2 == 0.125^2;
+eq2 = (Bx - ax)^2  + (By - ay)^2  == 0.24^2;
+
+% Resolver
+sol = solve([eq1, eq2], [Bx, By], 'Real', true); %Condicion para que tenga soluciones reales.
+
+eval(sol.Bx)
+eval(sol.By)
+
+%Se obtienen 2 soluciones para x y 2 para y, simplemente comprobamos los
+%valores en otras aplicaciones como geogebra para encontrar cual es el
+%valor mas optimo. En este caso : B= (0.640425728166680, 0.110186293793982);
+pB = [ 0.640425728166680,  0.110186293793982];
+% Repetimos para el resto de puntos, teniendo en cuenta la restricción del
+% angulo.
+%C 
+% Calculamos C
+syms Cx Cy
+
+Bx  = pB(1); By = pB(2);
+
+eqC1 = (Cx - O4x)^2 + (Cy - O4y)^2 == 0.25^2;
+eqC2 = (Cx - Bx)^2  + (Cy - By)^2  == 0.125^2;
+
+solC = solve([eqC1, eqC2], [Cx, Cy], 'Real', true); %Condición para que tenga soluciones reales.
+
+eval(solC.Cx);
+eval(solC.Cy);
+
+% Selección de la rama correcta según geometría
+pC = [double(solC.Cx(2)), double(solC.Cy(2))];  % ejemplo
+%D
+% Calculamos D
+syms Dx Dy
+
+O6x = 0.315; O6y = 0.185;
+Cx  = pC(1); Cy = pC(2);
+
+eqD1 = (Dx - O6x)^2 + (Dy - O6y)^2 == 0.43^2;
+eqD2 = (Dx - Cx)^2  + (Dy - Cy)^2  == 0.60^2;
+
+solD = solve([eqD1, eqD2], [Dx, Dy], 'Real', true); %Condición para que tenga soluciones reales.
+
+eval(solD.Dx);
+eval(solD.Dy);
+
+pD = [double(solD.Dx(2)), double(solD.Dy(2))];  % ejemplo
+
+% Para el punto E tenemos tambien la condición angular por lo tanto. 
+syms Ex Ey
+
+Dx = pD(1); Dy = pD(2);
+Cx = pC(1); Cy = pC(2);
+
+% Ecuación de circunferencia
+eqE1 = (Ex - Dx)^2 + (Ey - Dy)^2 == 0.8879^2;
+
+% Vectores
+vDC = [Cx - Dx, Cy - Dy];
+vDE = [Ex - Dx, Ey - Dy];
+
+% Condición de ángulo
+eqE2 = (vDC(1)*vDE(1) + vDC(2)*vDE(2)) / ...
+       (sqrt(vDC(1)^2+vDC(2)^2) * sqrt(vDE(1)^2+vDE(2)^2)) == cosd(6.63);
+
+% Resolver
+solE = solve([eqE1, eqE2], [Ex, Ey], 'Real', true);
+
+eval(solE.Ex)
+eval(solE.Ey)
+pE = [double(solE.Ex(1)), double(solE.Ey(1))];
+pA
+pB
+pC
+pD
+pE
