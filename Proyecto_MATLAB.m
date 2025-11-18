@@ -126,3 +126,89 @@ plot([pC(1) pE(1)], [pC(2) pE(2)], 'Color',[0.5 0 0.5],'LineWidth',2,'DisplayNam
 
 title('Mecanismo de seis barras - Configuración θ2=250°');
 legend show;
+
+%% CÁLCULO DE VELOCIDADES (CINEMÁTICA)
+fprintf('\n--- RESULTADOS DE VELOCIDADES ---\n');
+
+% 1. Datos de Entrada
+w2 = 2; % rad/s (k)
+
+% 2. Velocidad de A (vA = w2 x rA)
+rA = pA - O2; % Vector O2->A
+vA = [-w2 * rA(2), w2 * rA(1)]; % Producto cruz plano (-w*y, w*x)
+fprintf('vA = [%.4f, %.4f] m/s\n', vA(1), vA(2));
+
+% 3. PRIMER LAZO (Resolver w3 y w4 para hallar vB)
+% Sistema: vA + w3 x rAB = w4 x rO4B
+% Incógnitas: x = [w3; w4]
+rAB = pB - pA;
+rO4B = pB - [O4x, O4y];
+
+% Matriz de coeficientes (Sale de despejar las ecuaciones X e Y)
+% Fila 1 (X): -ry_AB * w3 + ry_O4B * w4 = -vAx
+% Fila 2 (Y):  rx_AB * w3 - rx_O4B * w4 = -vAy
+Matriz1 = [-rAB(2),  rO4B(2); 
+            rAB(1), -rO4B(1)];
+TerminoIndep1 = [-vA(1); -vA(2)];
+
+sol_w34 = Matriz1 \ TerminoIndep1; % Resolver sistema Ax=B
+w3 = sol_w34(1);
+w4 = sol_w34(2);
+
+fprintf('w3 (Biela) = %.4f rad/s\n', w3);
+fprintf('w4 (Salida Lazo 1) = %.4f rad/s\n', w4);
+
+% Calcular vB para comprobar
+vB = [-w4 * rO4B(2), w4 * rO4B(1)];
+fprintf('vB = [%.4f, %.4f] m/s\n', vB(1), vB(2));
+
+
+% 4. PUENTE: Velocidad de C
+% IMPORTANTE: C es solidario a la barra 4 (Triangulo O4-B-C)
+% Usamos w4 y el radio desde el pivote fijo O4
+rO4C = pC - [O4x, O4y];
+vC = [-w4 * rO4C(2), w4 * rO4C(1)]; 
+fprintf('vC = [%.4f, %.4f] m/s (Dato de entrada para el siguiente lazo)\n', vC(1), vC(2));
+
+
+% 5. SEGUNDO LAZO (Resolver w5 y w6 para hallar vD)
+% Sistema: vC + w5 x rCD = w6 x rO6D
+% Incógnitas: x = [w5; w6]
+rCD = pD - pC;
+rO6D = pD - [O6x, O6y];
+
+% Matriz de coeficientes
+% Fila 1 (X): -ry_CD * w5 + ry_O6D * w6 = -vCx
+% Fila 2 (Y):  rx_CD * w5 - rx_O6D * w6 = -vCy
+Matriz2 = [-rCD(2),  rO6D(2); 
+            rCD(1), -rO6D(1)];
+TerminoIndep2 = [-vC(1); -vC(2)];
+
+sol_w56 = Matriz2 \ TerminoIndep2;
+w5 = sol_w56(1);
+w6 = sol_w56(2);
+
+fprintf('w5 (Acoplador C-D) = %.4f rad/s\n', w5);
+fprintf('w6 (Salida D-E) = %.4f rad/s\n', w6);
+
+% Calcular vD
+vD = [-w6 * rO6D(2), w6 * rO6D(1)];
+fprintf('vD = [%.4f, %.4f] m/s\n', vD(1), vD(2));
+
+
+% 6. PUNTO FINAL: Velocidad de E
+% Como E pertenece a la barra 6 (la misma que D y O6), usamos w6 directamente desde O6
+% Alternativa: vE = vD + w6 x rDE (Da lo mismo)
+rO6E = pE - [O6x, O6y];
+vE = [-w6 * rO6E(2), w6 * rO6E(1)];
+
+fprintf('vE = [%.4f, %.4f] m/s (Resultado Final)\n', vE(1), vE(2));
+mag_vE = norm(vE);
+fprintf('Magnitud |vE| = %.4f m/s\n', mag_vE);
+
+% --- Dibujar vectores de velocidad en el gráfico ---
+quiver(pA(1), pA(2), vA(1), vA(2), 0.5, 'r', 'LineWidth', 2, 'MaxHeadSize', 0.5);
+quiver(pB(1), pB(2), vB(1), vB(2), 0.5, 'g', 'LineWidth', 2, 'MaxHeadSize', 0.5);
+quiver(pC(1), pC(2), vC(1), vC(2), 0.5, 'b', 'LineWidth', 2, 'MaxHeadSize', 0.5);
+quiver(pD(1), pD(2), vD(1), vD(2), 0.5, 'm', 'LineWidth', 2, 'MaxHeadSize', 0.5);
+quiver(pE(1), pE(2), vE(1), vE(2), 0.5, 'k', 'LineWidth', 2, 'MaxHeadSize', 0.5);
