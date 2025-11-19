@@ -36,9 +36,6 @@ eval(sol.By)
 %valores en otras aplicaciones como geogebra para encontrar cual es el
 %valor mas optimo. En este caso : B= (0.640425728166680, 0.110186293793982);
 pB = [ 0.640425728166680,  0.110186293793982];
-% Repetimos para el resto de puntos, teniendo en cuenta la restricción del
-% angulo.
-%C 
 % Calculamos C
 syms Cx Cy
 
@@ -53,7 +50,7 @@ eval(solC.Cx);
 eval(solC.Cy);
 
 % Selección de la rama correcta según geometría
-pC = [double(solC.Cx(2)), double(solC.Cy(2))];  % ejemplo
+pC = [double(solC.Cx(2)), double(solC.Cy(2))];  
 %D
 % Calculamos D
 syms Dx Dy
@@ -69,20 +66,16 @@ solD = solve([eqD1, eqD2], [Dx, Dy], 'Real', true); %Condición para que tenga s
 eval(solD.Dx);
 eval(solD.Dy);
 
-pD = [double(solD.Dx(1)), double(solD.Dy(1))];  % ejemplo
+pD = [double(solD.Dx(1)), double(solD.Dy(1))];  
 
-% Para E tenemos que tener en cuenta la posicion y el angulo, entonces los
-% calculos son distintos, comenzamos alpicando la ley de cosenos.
 DC = 0.6;
 DE = 0.8879;
 EC = sqrt(DE^2 + DC^2 - 2 * DE * DC * cos(6.63*pi/180))
 %Con la constante de la ley de cosenos, podemos calcular lo demás : 
 k= EC/sin(6.63*pi/180)
 
-%Calculamos los posibles angulos de C
-sinC = DE/k; asin(sinC)*180/pi %+
-sinD =DC/k; asin(sinD)*180/pi %+
-% Y sacamos las coordenadas del punto D
+sinC = DE/k; asin(sinC)*180/pi 
+sinD =DC/k; asin(sinD)*180/pi 
 % Direccion absoluta de DC desde D
 vDC = pC - pD;
 thetaDC = atan2(vDC(2), vDC(1));
@@ -138,15 +131,10 @@ rA = pA - O2; % Vector O2->A
 vA = [-w2 * rA(2), w2 * rA(1)]; % Producto cruz plano (-w*y, w*x)
 fprintf('vA = [%.4f, %.4f] m/s\n', vA(1), vA(2));
 
-% 3. PRIMER LAZO (Resolver w3 y w4 para hallar vB)
-% Sistema: vA + w3 x rAB = w4 x rO4B
-% Incógnitas: x = [w3; w4]
+% Resolver w3 y w4 para hallar vB)
 rAB = pB - pA;
 rO4B = pB - [O4x, O4y];
 
-% Matriz de coeficientes (Sale de despejar las ecuaciones X e Y)
-% Fila 1 (X): -ry_AB * w3 + ry_O4B * w4 = -vAx
-% Fila 2 (Y):  rx_AB * w3 - rx_O4B * w4 = -vAy
 Matriz1 = [-rAB(2),  rO4B(2); 
             rAB(1), -rO4B(1)];
 TerminoIndep1 = [-vA(1); -vA(2)];
@@ -156,30 +144,21 @@ w3 = sol_w34(1);
 w4 = sol_w34(2);
 
 fprintf('w3 (Biela) = %.4f rad/s\n', w3);
-fprintf('w4 (Salida Lazo 1) = %.4f rad/s\n', w4);
+fprintf('w4  = %.4f rad/s\n', w4);
 
-% Calcular vB para comprobar
 vB = [-w4 * rO4B(2), w4 * rO4B(1)];
 fprintf('vB = [%.4f, %.4f] m/s\n', vB(1), vB(2));
 
 
-% 4. PUENTE: Velocidad de C
-% IMPORTANTE: C es solidario a la barra 4 (Triangulo O4-B-C)
-% Usamos w4 y el radio desde el pivote fijo O4
+% 4. Velocidad de C
 rO4C = pC - [O4x, O4y];
 vC = [-w4 * rO4C(2), w4 * rO4C(1)]; 
-fprintf('vC = [%.4f, %.4f] m/s (Dato de entrada para el siguiente lazo)\n', vC(1), vC(2));
+fprintf('vC = [%.4f, %.4f] m/s \n', vC(1), vC(2));
 
 
-% 5. SEGUNDO LAZO (Resolver w5 y w6 para hallar vD)
-% Sistema: vC + w5 x rCD = w6 x rO6D
-% Incógnitas: x = [w5; w6]
+% (Resolver w5 y w6 para hallar vD)
 rCD = pD - pC;
 rO6D = pD - [O6x, O6y];
-
-% Matriz de coeficientes
-% Fila 1 (X): -ry_CD * w5 + ry_O6D * w6 = -vCx
-% Fila 2 (Y):  rx_CD * w5 - rx_O6D * w6 = -vCy
 Matriz2 = [-rCD(2),  rO6D(2); 
             rCD(1), -rO6D(1)];
 TerminoIndep2 = [-vC(1); -vC(2)];
@@ -197,8 +176,6 @@ fprintf('vD = [%.4f, %.4f] m/s\n', vD(1), vD(2));
 
 
 % 6. PUNTO FINAL: Velocidad de E
-% Como E pertenece a la barra 6 (la misma que D y O6), usamos w6 directamente desde O6
-% Alternativa: vE = vD + w6 x rDE (Da lo mismo)
 rO6E = pE - [O6x, O6y];
 vE = [-w6 * rO6E(2), w6 * rO6E(1)];
 
@@ -206,9 +183,72 @@ fprintf('vE = [%.4f, %.4f] m/s (Resultado Final)\n', vE(1), vE(2));
 mag_vE = norm(vE);
 fprintf('Magnitud |vE| = %.4f m/s\n', mag_vE);
 
-% --- Dibujar vectores de velocidad en el gráfico ---
-quiver(pA(1), pA(2), vA(1), vA(2), 0.5, 'r', 'LineWidth', 2, 'MaxHeadSize', 0.5);
-quiver(pB(1), pB(2), vB(1), vB(2), 0.5, 'g', 'LineWidth', 2, 'MaxHeadSize', 0.5);
-quiver(pC(1), pC(2), vC(1), vC(2), 0.5, 'b', 'LineWidth', 2, 'MaxHeadSize', 0.5);
-quiver(pD(1), pD(2), vD(1), vD(2), 0.5, 'm', 'LineWidth', 2, 'MaxHeadSize', 0.5);
-quiver(pE(1), pE(2), vE(1), vE(2), 0.5, 'k', 'LineWidth', 2, 'MaxHeadSize', 0.5);
+%% CÁLCULO DE ACELERACIONES
+fprintf('\n--- RESULTADOS DE ACELERACIONES ---\n');
+alpha2 = 0; 
+
+% Aceleración de A
+aA_n = -w2^2 * rA;
+aA_t = [-alpha2 * rA(2), alpha2 * rA(1)];
+aA = aA_n + aA_t;
+
+fprintf('aA (Normal)   : [%.4f, %.4f]\n', aA_n);
+fprintf('aA (Tangencial): [%.4f, %.4f]\n', aA_t);
+fprintf('aA (TOTAL)    : [%.4f, %.4f] m/s^2\n\n', aA);
+
+% Aceleración de B
+a_n_BA  = -w3^2 * rAB;
+a_n_O4B = -w4^2 * rO4B;
+
+% Resolvemos alphas 3 y 4
+TerminoIndep_Acel1 = [(a_n_O4B(1) - aA(1) - a_n_BA(1));
+                      (a_n_O4B(2) - aA(2) - a_n_BA(2))];
+sol_alpha34 = Matriz1 \ TerminoIndep_Acel1;
+alpha3 = sol_alpha34(1);
+alpha4 = sol_alpha34(2);
+
+aB_n = a_n_O4B;
+aB_t = [-alpha4 * rO4B(2), alpha4 * rO4B(1)];
+aB = aB_n + aB_t;
+
+fprintf('aB (Normal)   : [%.4f, %.4f]\n', aB_n);
+fprintf('aB (Tangencial): [%.4f, %.4f]\n', aB_t);
+fprintf('aB (TOTAL)    : [%.4f, %.4f] m/s^2\n\n', aB);
+
+% Aceleración de C
+aC_n = -w4^2 * rO4C;
+aC_t = [-alpha4 * rO4C(2), alpha4 * rO4C(1)];
+aC = aC_n + aC_t;
+
+fprintf('aC (Normal)   : [%.4f, %.4f]\n', aC_n);
+fprintf('aC (Tangencial): [%.4f, %.4f]\n', aC_t);
+fprintf('aC (TOTAL)    : [%.4f, %.4f] m/s^2\n\n', aC);
+
+% Aceleración de D
+a_n_DC  = -w5^2 * rCD;
+a_n_O6D = -w6^2 * rO6D;
+
+% Resolvemos alphas 5 y 6
+TerminoIndep_Acel2 = [(a_n_O6D(1) - aC(1) - a_n_DC(1));
+                      (a_n_O6D(2) - aC(2) - a_n_DC(2))];
+sol_alpha56 = Matriz2 \ TerminoIndep_Acel2;
+alpha5 = sol_alpha56(1);
+alpha6 = sol_alpha56(2);
+
+aD_n = a_n_O6D;
+aD_t = [-alpha6 * rO6D(2), alpha6 * rO6D(1)];
+aD = aD_n + aD_t;
+
+fprintf('aD (Normal)   : [%.4f, %.4f]\n', aD_n);
+fprintf('aD (Tangencial): [%.4f, %.4f]\n', aD_t);
+fprintf('aD (TOTAL)    : [%.4f, %.4f] m/s^2\n\n', aD);
+
+% Aceleración de E
+aE_n = -w6^2 * rO6E;
+aE_t = [-alpha6 * rO6E(2), alpha6 * rO6E(1)];
+aE = aE_n + aE_t;
+
+fprintf('aE (Normal)   : [%.4f, %.4f]\n', aE_n);
+fprintf('aE (Tangencial): [%.4f, %.4f]\n', aE_t);
+fprintf('aE (TOTAL)    : [%.4f, %.4f] m/s^2\n', aE);
+fprintf('|aE| Magnitud : %.4f m/s^2\n', norm(aE));
